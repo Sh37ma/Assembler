@@ -25,51 +25,56 @@ BUFLEN = 512
 
 main:
 
-movq $SYSREAD, %rax
+movq $SYSREAD, %rax	#wczytanie z klawiatury
 movq $STDIN, %rdi
 movq $textin, %rsi
 movq $BUFLEN, %rdx
 syscall
 
-dec %rax	#'\n'
-movq %rax, %rcx	#kopiuj dlugosc tekstu 
-movq $0, %rdi	#licznik
+dec %rax		#'\n'
+movq %rax, %rcx		#kopiuj dlugosc tekstu 
+movq $0, %rdi		#licznik
 
 jmp sprawdzPoczatek
 
-sprawdzPoczatek: #sprawdz czy jest to kod ascii >= zero
+sprawdzPoczatek:	 #sprawdz czy jest to kod ascii >= zero
 
 	movb textin(, %rdi, 1), %bh
 	cmp $POCZATEK, %bh
 	jge sprawdzKoniec
-	jmp niePoprawne
+        jmp koniecNiePoprawny
 
-sprawdzKoniec: #sprawdz czy jest to kod ascii <= siedem
+
+sprawdzKoniec:		 #sprawdz czy jest to kod ascii <= siedem
 	cmp $KONIEC, %bh
 	jle poprawne
-	jmp niePoprawne
+	jmp koniecNiePoprawny
 
-poprawne: #znak poprawny, inkrementuj licznik i prawdz czy wszystkie znaki
+poprawne:		 #znak poprawny, inkrementuj licznik i sprawdz czy wszystkie znaki
 	inc %rdi
 	cmp %rax, %rdi
 	jl sprawdzPoczatek
+	
+koniecPoprawny:    	  #poprawne dane-wyswietlenie komunikatu     
+
+        movq $SYSWRITE, %rax
+        movq $STDOUT, %rdi
+        movq $tekstP, %rsi
+        movq $tekstP_len, %rdx
+        syscall
 	jmp koniec
 
-niePoprawne: #jeden ze znaków jest nie poprawny, następuje przerwanie
+koniecNiePoprawny: #jeden ze znaków jest nie poprawny, następuje przerwanie
 	     #niepoprawne dane-wyswietlenie komunikatu
+
 	movq $SYSWRITE, %rax
 	movq $STDOUT, %rdi
 	movq $tekstN, %rsi
 	movq $tekstN_len, %rdx
 	syscall
-	jmp koniec2
-koniec:	     #poprawne dane-wyswietlenie komunikatu	
+
+koniec:	     #zastosowany w celu unikniecia podwojnych komunikatow
 	
-	movq $SYSWRITE, %rax
-	movq $STDOUT, %rdi
-	movq $tekstP, %rsi
-	movq $tekstP_len, %rdx
-	syscall
 
 #konwersja z U8 na U10
 #	movq $0, %rdi	#licznik
@@ -91,7 +96,6 @@ koniec:	     #poprawne dane-wyswietlenie komunikatu
 
 
 
-koniec2:
 
 movq $SYSEXIT, %rax
 movq $EXIT_SUCCESS, %rdi
