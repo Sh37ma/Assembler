@@ -17,28 +17,36 @@ main:
 #_____________________________________________________________________
 
 movq $-2, %rcx   #wynik
-movq $2, %rbx  #licznik
-#push %r10
+movq $7, %rbx  #licznik
 
-call e_do_fukcji
+push %rbx	#dodanie na stos
+push %rcx
+
+call e_funkcja
 jmp e_po_funkcji
 
 #______________________________________________________________________
 
-e_do_fukcji:
+e_funkcja:
+movq %rsp, %rbp
 
-e_fukcja:
-#pop %rbx    #argument
-#pop %rcx    #wynik
+e_test:
+movq $0, %rbx #zerowanie dla testowania porpawnosci pobrania ze stosu
+movq $0, %rcx
 
+movq 8(%rbp), %rcx
+movq 16(%rbp), %rbx
 
 movq %rcx, %rax     #działania
-movq $7, %rdx
+movq $5, %rdx
 mul %rdx
-add $5, %rax
+add $7, %rax
 
-movq %rax, %rcx     #przygotownie wartosci na stos
+movq %rax, %rcx     #zapisanie wyniku
 dec %rbx
+
+push %rbx	#dodanie na stos
+push %rcx
 
 
 cmp $0, %rbx
@@ -46,37 +54,19 @@ jle e_ret
 jmp e_call
 
 e_call:
-#push %rcx
-#push %rbx
-call e_do_fukcji
+call e_funkcja
+
 e_ret:
+add $16, %rsp
 ret
 
 #______________________________________________________________________
+
+
+
 e_po_funkcji:
-
-
-
-
-add $'0', %rcx
-movq $0, %rdi
-movq %rcx, liczba_do_wyswietlenia(, %rdi, 1)
-inc %rdi
-movq $'\n', liczba_do_wyswietlenia(, %rdi, 1)
-
-#wyswietlenie tekstu z buffora
-mov $SYSWRITE, %rax
-mov $STDOUT, %rdi
-mov $liczba_do_wyswietlenia, %rsi
-mov %r10, %rdx
-syscall
-
-
-
-
-
-
-
+sub $168, %rsp
+pop %rcx
 
 e_exitProgramu:
 movq $SYSEXIT, %rax
